@@ -1,0 +1,16 @@
+name: Deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 18
+        uses: actions/setup-node@v2
+        with:
+          node-version: "18.x"
+      - name: Install dependencies
+        run: npm install
+      - name: Deploy commands
+        run: npm run deploy-commands
