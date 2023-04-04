@@ -35,3 +35,4 @@ jobs:
     name: Deploy
     if: github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/deploy.yml
+    secrets: inherit

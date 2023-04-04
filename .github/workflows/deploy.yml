@@ -2,6 +2,16 @@ name: Deploy
 
 on:
   workflow_call:
+    secrets:
+      TOKEN:
+        description: Discord Api Token
+        required: true
+      CLIENT_ID:
+        description: Discord Client Id
+        required: true
+      GUILD_ID:
+        description: Discord server id (to be removed)
+        required: true
 
 jobs:
   deploy:
