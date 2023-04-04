@@ -1,0 +1,36 @@
+{
+  "name": "discord-bot-ai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "start:dev": "nodemon",
+    "lint": "eslint src/",
+    "tsc" : "tsc",
+    "lint:fix": "eslint src/ --fix",
+    "deploy-commands": "ts-node deploy-commands.ts",
+    "test": "jest --coverage"
+  },
+  "author": "Elliott de Launay",
+  "license": "cc-by-sa-4.0",
+  "dependencies": {
+    "discord.js": "^14.8.0",
+    "dotenv": "^16.0.3",
+    "gpt-3-encoder": "^1.1.4",
+    "openai": "^3.2.1",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^18.15.11",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "eslint": "^8.37.0",
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
+    "ts-jest": "^29.0.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.3.0"
+  }
+}
