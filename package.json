@@ -9,7 +9,7 @@
     "lint": "eslint src/",
     "tsc" : "tsc",
     "lint:fix": "eslint src/ --fix",
-    "deploy-commands": "ts-node deploy-commands.ts",
+    "deploy-commands": "ts-node bin/deploy-commands.ts",
     "test": "jest --coverage"
   },
   "author": "Elliott de Launay",
