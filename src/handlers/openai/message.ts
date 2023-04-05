@@ -12,7 +12,10 @@ const activeMessages = new Map<Snowflake, string>();
 const messageHandler = ({ channelId, chunk, end }: MessageHandler) => {
     const content = (activeMessages.get(channelId) || '') + chunk;
     activeMessages.set(channelId, content);
-    if (end) recordMessage({ content, role: 'assistant' });
+    if (end) {
+        recordMessage({ content, role: 'assistant' });
+        activeMessages.delete(channelId);
+    }
 };
 
 export { messageHandler };
