@@ -55,6 +55,7 @@ jobs:
   deploy:
     name: Build, Package, & Deploy
     needs: wake_up
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     environment: Main
     steps:
