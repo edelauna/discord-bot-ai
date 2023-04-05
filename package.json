@@ -7,7 +7,7 @@
     "start": "ts-node src/app.ts",
     "start:dev": "nodemon",
     "lint": "eslint src/",
-    "tsc" : "tsc",
+    "tsc": "tsc",
     "lint:fix": "eslint src/ --fix",
     "deploy-commands": "ts-node bin/deploy-commands.ts",
     "test": "jest --coverage"
@@ -22,7 +22,6 @@
     "winston": "^3.8.2"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
