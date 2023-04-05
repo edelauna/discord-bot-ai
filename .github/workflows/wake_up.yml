@@ -1,0 +1,32 @@
+name: Wake Up
+
+on:
+  workflow_call:
+    secrets:
+      AZURE_CREDENTIALS:
+        description: Azure Login Creds for Azure CLI
+        required: true
+      AZURE_VM_NAME:
+        description: Name of the Azure VM
+        required: true
+      AZURE_RESOURCE_GROUP:
+        description: Name of the Azure Resource Group where the VM exists.
+        required: true
+
+jobs:
+  wake_up:
+    name: Wake Up
+    runs-on: ubuntu-latest
+    environment: Main
+    steps:
+      - uses: actions/checkout@v3
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Start VM
+        env:
+          AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          AZURE_VM_NAME: ${{ secrets.AZURE_VM_NAME }}
+        run: |
+          az vm start --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_VM_NAME
