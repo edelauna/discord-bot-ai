@@ -1,8 +1,5 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { Client, Collection, GatewayIntentBits } from 'discord.js';
+import { Client, Collection, GatewayIntentBits, Options } from 'discord.js';
 import type { CommandInteraction } from 'discord.js';
-import { logger } from '../util/log';
 
 interface SlashCommand {
     name: string;
@@ -15,27 +12,49 @@ interface AppClient extends Client {
 }
 // Create a new client instance
 const client = new Client({
+    makeCache: Options.cacheWithLimits({
+        // guild.commands
+        ApplicationCommandManager: 0,
+        // guild.emojis
+        BaseGuildEmojiManager: 0,
+        // client.channels
+        // ChannelManager: 0,
+        // guild.channels
+        // GuildChannelManager: 0,
+        // guild.bans
+        GuildBanManager: 0,
+        // guild.invites
+        GuildInviteManager: 0,
+        // guild.members
+        GuildMemberManager: 0,
+        // guild.stickers
+        GuildStickerManager: 0,
+        // guild.scheduledEvents
+        GuildScheduledEventManager: 0,
+        // channel.messages
+        MessageManager: 0,
+        // guild.presences
+        PresenceManager: 0,
+        // message.reactions
+        ReactionManager: 0,
+        // reaction.users
+        ReactionUserManager: 0,
+        // guild.stageInstances
+        StageInstanceManager: 0,
+        // channel.threads
+        ThreadManager: 0,
+        // threadchannel.members
+        ThreadMemberManager: 0,
+        // client.users
+        UserManager: 0,
+        // guild.voiceStates
+        VoiceStateManager: 0,
+    }),
     intents: [
         GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent,
     ],
 }) as AppClient;
 
 client.commands = new Collection();
-
-const commandsPath = path.join(__dirname, './commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('ts'));
-(async () => {
-    for (const file of commandFiles) {
-        const filePath = path.join(commandsPath, file);
-        const command = await import(filePath);
-        // Set a new item in the Collection with the key as teh command name and the values as the exported module
-        if ('data' in command && 'execute' in command) {
-            client.commands.set(command.data.name, command);
-        }
-        else {
-            logger.warn(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-        }
-    }
-})();
 
 export { client, AppClient };

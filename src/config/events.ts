@@ -1,22 +1,25 @@
 import type { Client } from 'discord.js';
-import { readdirSync } from 'node:fs';
+import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 const registerEventHandlers = async (client: Client) => {
     const eventsPath = path.join(__dirname, './events');
-    const eventsFiles = readdirSync(eventsPath).filter(file => file.endsWith('.ts'));
+    const dirEntries = await fs.readdir(eventsPath, { withFileTypes: true });
 
-    for (const file of eventsFiles) {
-        const filePath = path.join(eventsPath, file);
-        const event = await import(filePath);
-
-        if (event.once) {
-            client.once(event.name, (...args) => event.execute(...args));
-        }
-        else {
-            client.on(event.name, (...args) => event.execute(...args));
+    const promises = [];
+    for (const dirEntry of dirEntries) {
+        if (dirEntry.isFile() && dirEntry.name.match(/\.ts$|\.js$/)) {
+            const event = await import(path.join(eventsPath, dirEntry.name));
+            if (event.once) {
+                client.once(event.name, (...args) => event.execute(...args));
+            }
+            else {
+                client.on(event.name, (...args) => event.execute(...args));
+            }
+            promises.push(event);
         }
     }
+    await Promise.all(promises);
 };
 
 export { registerEventHandlers };
