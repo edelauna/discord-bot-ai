@@ -59,27 +59,38 @@ jobs:
     runs-on: ubuntu-latest
     environment: Main
     steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        env:
+          DOCKER_ACCESS: ${{ secrets.DOCKER_ACCESS }}
+          DOCKER_USER: ${{ vars.DOCKER_USER }}
+          DOCKER_REPO: ${{ vars.DOCKER_REPO }}
+        run: |
+          docker build --tag=${DOCKER_USER}/discord-bot-ai .
+          echo "${DOCKER_ACCESS}" | docker login -u ${DOCKER_USER} --password-stdin
+          docker push ${DOCKER_USER}/${DOCKER_REPO}:latest
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: Build & Package
+      - name: Package
         env:
           AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
           AZURE_VM_NAME: ${{ secrets.AZURE_VM_NAME }}
           AZURE_PACKAGE_SCRIPT: ${{ secrets.AZURE_PACKAGE_SCRIPT }}
         run: |
-          az vm run-command invoke --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_VM_NAME \
-            --command-id RunShellScript --scripts "$AZURE_PACKAGE_SCRIPT" --query "value[].message" --output tsv
+          az vm run-command invoke --resource-group $AZURE_RESOURCE_GROUP \
+            --name $AZURE_VM_NAME --command-id RunShellScript \
+            --scripts "$AZURE_PACKAGE_SCRIPT" --query "value[].message" --output tsv
       - name: Deploy
         env:
           AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
           AZURE_VM_NAME: ${{ secrets.AZURE_VM_NAME }}
           AZURE_DEPLOY_SCRIPT: ${{ secrets.AZURE_DEPLOY_SCRIPT }}
         run: |
-          az vm run-command invoke --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_VM_NAME \
-            --command-id RunShellScript --scripts "$AZURE_DEPLOY_SCRIPT" --query "value[].message" --output tsv
-      - uses: actions/checkout@v3
+          az vm run-command invoke --resource-group $AZURE_RESOURCE_GROUP \
+            --name $AZURE_VM_NAME --command-id RunShellScript \
+            --scripts "$AZURE_DEPLOY_SCRIPT" --query "value[].message" --output tsv
       - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
