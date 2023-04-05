@@ -43,13 +43,12 @@ jobs:
         env:
           AZURE_VM_NAME: ${{ secrets.AZURE_VM_NAME }}
         run: |
-          power_state=$(az vm list -d --query "[?name=='"${AZURE_VM_NAME}"'].powerState" -o tsv)
-          echo "Debugging Power State: $power_state"
+          power_state=$(az vm list -d --query "[?name=='${AZURE_VM_NAME}'].powerState" -o tsv)
           echo "power_state=$power_state" >> $GITHUB_OUTPUT
   wake_up:
     name: Wake Up
     needs: heart_beat
-    if: ${{ needs.heart_beat.outputs.power_state }} != 'VM running'
+    if: ${{ needs.heart_beat.outputs.power_state != 'VM running' }}
     uses: ./.github/workflows/wake_up.yml
     secrets: inherit
 
