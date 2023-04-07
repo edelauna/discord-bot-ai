@@ -1,20 +1,22 @@
 import type { Message } from 'discord.js';
 import { interactWithOpenAi, running, updateRunnerStatus } from '../../svcs/runner';
-import { chunkHandler } from '../../handlers/chunk';
 import { logger } from '../../util/log';
 import { RunnerAlreadyFinishedError, RunnerAlreadyStartedError } from '../../errors/runner';
-import { completionMessage } from '../../svcs/openai';
 import { send } from '../../util/send';
+import { multiplexorService } from '../../svcs/runners/mux';
 
 
 // Mocks
 jest.mock('../../util/send');
-jest.mock('../../handlers/chunk');
+jest.mock('../../svcs/runners/mux');
 jest.mock('../../util/log');
 jest.mock('../../svcs/openai');
 
 describe('runner', () => {
+    let mockMultiplexorService: jest.MockedFunction<typeof multiplexorService>;
     beforeEach(() => {
+        mockMultiplexorService = multiplexorService as jest.MockedFunction<typeof multiplexorService>;
+
         try {
             updateRunnerStatus('complete');
         }
@@ -27,26 +29,20 @@ describe('runner', () => {
         jest.resetAllMocks();
     });
 
-    describe('interactWithOpenAi', () => {
-        it('calls completionMessage with channelId and chunkHandler', async () => {
-            const channel = { sendTyping: jest.fn() };
+    describe('multiplexorService', () => {
+        it('calls multiplexorService with message', async () => {
+            const message = { channelId: '123', channel: jest.fn(), content: 'hi' } as unknown as Message;
+            mockMultiplexorService.mockResolvedValue(undefined);
+            await mockMultiplexorService(message);
 
-            const message = { channelId: '123', channel, content: 'hi' } as unknown as Message;
-            const completionMessageMock = completionMessage as jest.MockedFunction<typeof completionMessage>;
-            completionMessageMock.mockResolvedValue(undefined);
-            await interactWithOpenAi(message);
-
-            expect(completionMessageMock).toHaveBeenCalled();
-            expect(completionMessageMock).toHaveBeenCalledWith('123', chunkHandler);
+            expect(multiplexorService).toHaveBeenCalled();
+            expect(multiplexorService).toHaveBeenCalledWith(message);
         });
 
-        it('logs and sends an error message when completionMessage throws an error', async () => {
-
-            const channel = { sendTyping: jest.fn() };
-            const message = { channelId: '123', channel, content: 'hi' } as unknown as Message;
+        it('logs and sends an error message when multiplexorService throws an error', async () => {
+            const message = { channelId: '123', channel: jest.fn(), content: 'hi' } as unknown as Message;
             const error = new Error('Oops!');
-            const completionMessageMock = completionMessage as jest.MockedFunction<typeof completionMessage>;
-            completionMessageMock.mockRejectedValue(error);
+            mockMultiplexorService.mockRejectedValue(error);
             const sendMock = send as jest.MockedFunction<typeof send>;
             sendMock.mockImplementation = jest.fn();
 
