@@ -1,10 +1,8 @@
 import { Message } from 'discord.js';
 import { RunnerAlreadyFinishedError, RunnerAlreadyStartedError } from '../errors/runner';
-import { recordMessage } from '../util/openai/messages';
-import { completionMessage } from './openai';
 import { send, setSend } from '../util/send';
-import { chunkHandler } from '../handlers/chunk';
 import { logger } from '../util/log';
+import { multiplexorService } from './runners/mux';
 
 let running = false;
 
@@ -12,10 +10,8 @@ const interactWithOpenAi = async (message: Message) => {
     // calling complete in chunkHandler
     updateRunnerStatus('start');
     setSend({ channelId: message.channelId, channel: message.channel });
-    recordMessage({ content: message.content, role: 'user' });
-    await message.channel.sendTyping();
     try {
-        await completionMessage(message.channelId, chunkHandler);
+        await multiplexorService(message);
     }
     catch (error) {
         send(message.channelId, '__**[There was an error processing the request]**__');
