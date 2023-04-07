@@ -1,16 +1,19 @@
 import { IncomingMessage } from 'http';
-import { streamHandler } from '../../../handlers/openai/chat-completions';
-import { ChunkHandler } from '../../../handlers/chunk';
+import { streamHandler } from '../../../handlers/openai/stream';
+import { chunkHandler } from '../../../handlers/chunk';
 
+jest.mock('../../../handlers/chunk');
 
 describe('streamHandler', () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
     it('parses valid JSON data and calls the callback', async () => {
         const mockStream = {
             on: jest.fn(),
         };
-        const mockCallback = jest.fn((args: ChunkHandler) => {
-            if (args.resolver?.end) args.resolver.end();
-        });
+        const mockCallback = chunkHandler as jest.MockedFunction<typeof chunkHandler>;
+        mockCallback.mockResolvedValue(undefined);
         const channelId = 'channel1';
 
         const testData = ['data: {"choices":[{"delta":5}]}', 'data: {"choices":[{"delta":10}]}', 'data: [DONE]'];
@@ -31,7 +34,7 @@ describe('streamHandler', () => {
         });
 
         // Call the streamHandler function.
-        await streamHandler(mockStream as unknown as IncomingMessage, channelId, mockCallback);
+        await streamHandler(mockStream as unknown as IncomingMessage, channelId);
 
         // Assert that the mockStream.on function was called with the correct arguments.
         expect(mockStream.on).toHaveBeenCalledTimes(3);
@@ -43,7 +46,7 @@ describe('streamHandler', () => {
         expect(mockCallback).toHaveBeenCalledTimes(3);
         expect(mockCallback).toHaveBeenCalledWith({ channelId, data: 5 });
         expect(mockCallback).toHaveBeenCalledWith({ channelId, data: 10 });
-        expect(mockCallback).toHaveBeenCalledWith({ channelId, resolver: { end: expect.any(Function) } });
+        expect(mockCallback).toHaveBeenCalledWith({ channelId, last: true });
 
         // Assert that the Promise resolves without errors.
         await expect(streamPromise).resolves.not.toThrow();
@@ -52,33 +55,39 @@ describe('streamHandler', () => {
     it('handles JSON parsing errors and calls the callback with an error object', async () => {
         const mockStream = {
             on: jest.fn(),
+            emit: jest.fn(),
         };
-        const mockCallback = jest.fn((args: ChunkHandler) => {
-            if (args.resolver?.error && args.error) args.resolver.error(args.error);
-        });
+        const mockCallback = chunkHandler as jest.MockedFunction<typeof chunkHandler>;
+        mockCallback.mockResolvedValue();
         const channelId = 'channel1';
         const testData = 'data: {invalid JSON}';
 
         // Create a Promise that resolves after the "end" event is emitted.
         const streamPromise = new Promise<void>((resolve) => {
+            let error: Error;
             mockStream.on.mockImplementation((eventName, listener) => {
                 if (eventName === 'data') {
                     listener(Buffer.from(`${testData}\n\n`));
                 }
-                else if (eventName === 'end') {
-                    listener();
+                else if (eventName === 'error') {
+                    listener(error);
                     resolve();
+                }
+            });
+            mockStream.emit.mockImplementation((eventName, arg) => {
+                if (eventName === 'error') {
+                    error = arg;
                 }
             });
         });
 
         try {
             // Call the streamHandler function.
-            await streamHandler(mockStream as unknown as IncomingMessage, channelId, mockCallback);
+            await streamHandler(mockStream as unknown as IncomingMessage, channelId);
         }
         catch (error) {
             expect(error).toBeInstanceOf(Error);
-            expect((error as Error).message).toMatch(/Unexpected token i in JSON at position 1/);
+            expect((error as Error).message).toMatch(/Error with JSON.parse and data: {invalid JSON}./);
         }
 
         // Assert that the mockStream.on function was called with the correct arguments.
@@ -88,15 +97,8 @@ describe('streamHandler', () => {
         expect(mockStream.on).toHaveBeenCalledWith('error', expect.any(Function));
 
         // Assert that the mockCallback function was called with the correct arguments.
-        expect(mockCallback).toHaveBeenCalledTimes(2);
-        expect(mockCallback).toHaveBeenCalledWith({
-            channelId, resolver: {
-                error: expect.any(Function),
-            },
-            error: expect.any(Error),
-        });
-        // this still gets called because the above error is caught in the data event.
-        expect(mockCallback).toHaveBeenCalledWith({ channelId, resolver: { end: expect.any(Function) } });
+        expect(mockCallback).toHaveBeenCalledTimes(1);
+        expect(mockCallback).toHaveBeenCalledWith({ channelId, last: true });
 
         // Assert that the Promise resolves without errors.
         await expect(streamPromise).resolves.not.toThrow();
