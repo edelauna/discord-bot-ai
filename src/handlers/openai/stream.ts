@@ -1,12 +1,12 @@
 import { IncomingMessage } from 'http';
-import type { ChunkHandler } from '../chunk';
+import { chunkHandler } from '../chunk';
 import { Snowflake } from 'discord.js';
 import { logger } from '../../util/log';
+import { StreamDataError } from '../../errors/stream';
 
 const streamHandler = (
     stream: IncomingMessage,
     channelId: Snowflake,
-    cb: (args: ChunkHandler) => string | void,
 ) => new Promise<void>((resolve, reject) => {
     stream.on('data', async (chunk: Buffer) => {
         // Messages in the event stream are separated by a pair of newline characters.
@@ -19,17 +19,24 @@ const streamHandler = (
                 const data = payload.replaceAll(/(\n)?^data:\s*/g, '');
                 try {
                     const delta = JSON.parse(data.trim());
-                    cb({ channelId, data: delta.choices[0].delta });
+                    chunkHandler({ channelId, data: delta.choices[0].delta });
                 }
                 catch (error) {
-                    logger.error(`Error with JSON.parse and ${payload}.\n${error}`);
-                    cb({ channelId, resolver: { error: reject }, error: error as Error });
+                    const msg = `Error with JSON.parse and ${payload}.`;
+                    logger.error(`${msg}\n${error}`);
+                    stream.emit('error', new StreamDataError(msg, error as Error));
                 }
             }
         }
     });
-    stream.on('end', () => cb({ channelId, resolver: { end: resolve } }));
-    stream.on('error', (error: Error) => cb({ channelId, resolver: { error: reject }, error }));
+    stream.on('end', async () => {
+        await chunkHandler({ channelId, last: true });
+        resolve();
+    });
+    stream.on('error', async (error: Error) => {
+        await chunkHandler({ channelId, last: true });
+        reject(error);
+    });
 });
 
 export { streamHandler };
