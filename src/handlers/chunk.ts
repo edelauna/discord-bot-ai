@@ -42,6 +42,7 @@ const handleChunk = (channelId: Snowflake, chunk: string) => {
 const handleLastChunk = async (channelId: Snowflake) => {
     const lastChunk = activeChunks.get(channelId) || '';
     activeChunks.delete(channelId);
+    if (lastChunk == '') { return; }
     messageHandler({ channelId, chunk: lastChunk, end: true });
     await send(channelId, lastChunk);
     await sendTyping(channelId);
