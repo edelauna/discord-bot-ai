@@ -14,12 +14,7 @@ module.exports = {
             return;
         }
 
-        try {
-            await command.execute(interaction);
-        }
-        catch (error) {
-            logger.error(`Error executing ${interaction.commandName}`);
-            logger.error(error);
-        }
+        try { await command.execute(interaction); }
+        catch (error) { logger.error(`Error executing ${interaction.commandName}`, { stack: (error as Error).stack }); }
     },
 };
