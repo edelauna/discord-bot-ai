@@ -11,7 +11,7 @@ const registerCommandHandlers = async (c: AppClient) => {
     for (const dirEntry of commandFiles) {
         if (dirEntry.isFile() && dirEntry.name.match(/\.ts$|\.js$/)) {
             const command = await import(path.join(commandsPath, dirEntry.name));
-            // Set a new item in the Collection with the key as teh command name and the values as the exported module
+            // Set a new item in the Collection with the key as the command name and the values as the exported module
             if ('data' in command && 'execute' in command) {
                 c.commands.set(command.data.name, command);
             }
