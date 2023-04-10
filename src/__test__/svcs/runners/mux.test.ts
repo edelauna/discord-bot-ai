@@ -2,19 +2,16 @@ import { Message } from 'discord.js';
 import { multiplexorService } from '../../../svcs/runners/mux';
 import { singleMessage } from '../../../svcs/runners/single-message';
 import { multiMessage } from '../../../svcs/runners/multi-message';
+import { runners } from '../../../svcs/runner';
 
 jest.mock('../../../svcs/runners/single-message');
 jest.mock('../../../svcs/runners/multi-message');
 
 describe('multiplexorService', () => {
-    let message: jest.Mocked<Message>;
+    let mockRunners: jest.MockedObject<typeof runners>;
 
     beforeEach(() => {
-        message = {
-            attachments: {
-                size: 0,
-            },
-        } as jest.Mocked<Message>;
+        mockRunners = runners as jest.MockedObject<typeof runners>;
     });
 
     afterEach(() => {
@@ -22,13 +19,19 @@ describe('multiplexorService', () => {
     });
 
     it('should call singleMessage if message has no attachments', () => {
-        multiplexorService(message);
-        expect(singleMessage).toHaveBeenCalledWith(message);
+        mockRunners['ref-123'] = {
+            status: 'running', message: {
+                attachments: { size: 0 },
+                content: 'The message',
+            } as Message,
+        };
+        multiplexorService('ref-123');
+        expect(singleMessage).toHaveBeenCalledWith({ content: 'The message', referenceId: 'ref-123' });
     });
 
     it('should call multiMessage if message has attachments', () => {
-        Object.defineProperty(message.attachments, 'size', { value: 1 });
-        multiplexorService(message);
-        expect(multiMessage).toHaveBeenCalledWith(message);
+        mockRunners['ref-123'] = { status: 'running', message: { attachments: { size: 1 } } as Message };
+        multiplexorService('ref-123');
+        expect(multiMessage).toHaveBeenCalledWith('ref-123');
     });
 });
