@@ -1,36 +1,51 @@
-import { Message } from 'discord.js';
-import { RunnerAlreadyFinishedError, RunnerAlreadyStartedError } from '../errors/runner';
+import type { Message, Snowflake } from 'discord.js';
 import { send, setSend } from '../util/send';
 import { logger } from '../util/log';
 import { multiplexorService } from './runners/mux';
-
-let running = false;
+import { generateUuid } from '../util/uuid';
+/**
+ * Enforce synchronous communication per channel.
+ * Any new messages should cancel in-process requests.
+*/
+type ReferenceId = string;
+interface Runner {
+    message: Message;
+    status: 'running' | 'aborted',
+}
+const runners: Record<ReferenceId, Runner> = {};
+const running: Record<Snowflake, ReferenceId> = {};
 
 const interactWithOpenAi = async (message: Message) => {
-    // calling complete in chunkHandler
-    updateRunnerStatus('start');
-    setSend({ channelId: message.channelId, channel: message.channel });
+    const { channelId, channel } = message;
+    const referenceId = generateUuid();
     try {
-        await multiplexorService(message);
+        updateRunners('start', message, referenceId);
+        setSend({ channelId, channel });
+        await multiplexorService(referenceId);
     }
     catch (error) {
-        send(message.channelId, '__**[There was an error processing the request]**__');
-        logger.error(error);
+        if (error instanceof Error) {
+            send(channelId, `||Error:${error.message} processing referenceId: ${referenceId}||`);
+            logger.error(error.message, { stack: error.stack, referenceId: referenceId });
+        }
     }
     finally {
-        await updateRunnerStatus('complete');
+        updateRunners('complete', message, referenceId);
     }
 };
 
-const updateRunnerStatus = (action: 'start' | 'complete') => {
+const updateRunners = (action: 'start' | 'complete', message: Message, referenceId: ReferenceId) => {
+    const { channelId } = message;
+    const runningReferenceId = running[channelId];
     if (action == 'start') {
-        if (running == true) throw new RunnerAlreadyStartedError('Runner is currently activated.');
-        running = true;
+        if (runningReferenceId) { runners[runningReferenceId] = { ...runners[runningReferenceId], status: 'aborted' }; }
+        // register new runner
+        running[channelId] = referenceId;
+        runners[referenceId] = { status: 'running', message: message };
         return;
     }
-    if (running == false) throw new RunnerAlreadyFinishedError('Runner is currently not activated.');
-
-    running = false;
+    if (runningReferenceId == referenceId) { delete running[channelId]; }
+    delete runners[referenceId];
 };
 
-export { running, interactWithOpenAi, updateRunnerStatus };
+export { runners, interactWithOpenAi, ReferenceId, updateRunners };

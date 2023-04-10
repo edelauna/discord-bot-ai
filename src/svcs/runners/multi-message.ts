@@ -1,30 +1,31 @@
-import type { Message } from 'discord.js';
 import { send, sendTyping } from '../../util/send';
 import { singleMessage } from './single-message';
 import { logger } from '../../util/log';
 import { getFileContent, isTextFile } from '../../handlers/files';
-import { generateUuid } from '../../util/uuid';
+import { ReferenceId, runners } from '../runner';
 
-const multiMessage = async (message: Message) => {
-    await sendTyping(message.channelId);
-    send(message.channelId,
+const multiMessage = async (referenceId: ReferenceId) => {
+    const { message, status } = runners[referenceId];
+    const { channelId, attachments } = message;
+    await sendTyping(channelId);
+    send(channelId,
         '||Noticed there were some attachments with your recent message. ' +
         'Will download and analyze the attachments based on the accompanying message.||')
-        .then(() => sendTyping(message.channelId));
+        .then(() => sendTyping(channelId));
     const preText = message.content + '\n';
-    for (const attachment of message.attachments.values()) {
-        send(message.channelId, `Downloading ${attachment.name}...`).then(() => sendTyping(message.channelId));
+    for (const attachment of attachments.values()) {
+        if (status == 'aborted') { break; }
+        send(channelId, `Downloading ${attachment.name}...`).then(() => sendTyping(channelId));
         try {
             const processable = await isTextFile(attachment.id, attachment.url);
             if (!processable) { continue; }
             const content = await getFileContent(attachment.id);
-            await singleMessage({ content: preText + content, channelId: message.channelId });
+            await singleMessage({ content: preText + content, referenceId });
         }
         catch (err) {
-            const referenceId = generateUuid();
-            send(message.channelId,
-                `There was a problem with ${attachment.name}:${(err as Error).message}\nReferenceId: ${referenceId}`,
-            ).then(() => sendTyping(message.channelId));
+            send(channelId,
+                `||There was a problem with ${attachment.name}:${(err as Error).message}\nReferenceId: ${referenceId}||`,
+            ).then(() => sendTyping(channelId));
             logger.warn(`Problem with <${attachment.id},${attachment.name}>\n${err}`, { referenceId });
         }
     }
