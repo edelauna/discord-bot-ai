@@ -3,4 +3,5 @@ coverage
 dist
 
 .env
-development.log
+logs/development.log
+db/*.db
