@@ -1,14 +1,17 @@
 import { IncomingMessage } from 'http';
 import { chunkHandler } from '../chunk';
-import { Snowflake } from 'discord.js';
 import { logger } from '../../util/log';
-import { StreamDataError } from '../../errors/stream';
+import { StreamDataError, StreamInterruptedError } from '../../errors/stream';
+import { ReferenceId, runners } from '../../svcs/runner';
 
 const streamHandler = (
     stream: IncomingMessage,
-    channelId: Snowflake,
+    referenceId: ReferenceId,
 ) => new Promise<void>((resolve, reject) => {
+    const { channelId } = runners[referenceId].message;
     stream.on('data', async (chunk: Buffer) => {
+        const { status } = runners[referenceId];
+        if (status == 'aborted') { return stream.destroy(new StreamInterruptedError('Stream aborted')); }
         // Messages in the event stream are separated by a pair of newline characters.
         const payloads = chunk.toString().split('\n\n');
         for (const payload of payloads) {
@@ -23,7 +26,7 @@ const streamHandler = (
                 }
                 catch (error) {
                     const msg = `Error with JSON.parse and ${payload}.`;
-                    logger.error(`${msg}\n${error}`);
+                    logger.error(`${msg}\n${error}`, { referenceId });
                     stream.emit('error', new StreamDataError(msg, error as Error));
                 }
             }
@@ -35,7 +38,8 @@ const streamHandler = (
     });
     stream.on('error', async (error: Error) => {
         await chunkHandler({ channelId, last: true });
-        reject(error);
+        if (error instanceof StreamInterruptedError) { resolve(); }
+        else { reject(error); }
     });
 });
 
