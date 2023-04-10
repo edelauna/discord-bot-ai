@@ -6,13 +6,13 @@ import path from 'node:path';
 const commands = [];
 // Grab all the command files from the commands directory you created earlier
 const commandsPath = path.join(__dirname, '../src/config/commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
 
 // and deploy your commands!
 (async () => {
     // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
     for (const file of commandFiles) {
-        const command = await import(`./commands/${file}`);
+        const command = await import(`../src/config/commands/${file}`);
         commands.push(command.data.toJSON());
     }
 

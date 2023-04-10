@@ -10,7 +10,14 @@
     "tsc": "tsc",
     "lint:fix": "eslint src/ --fix",
     "deploy-commands": "ts-node bin/deploy-commands.ts",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "knex:init": "knex init -x ts",
+    "knex:migrate:make" : "knex migrate:make update_me -x ts",
+    "knex:migrate:latest": "knex migrate:latest",
+    "knex:migrate:rollback": "knex migrate:rollback",
+    "knex:migrate:up": "knex migrate:up",
+    "knex:migrate:down": "knex migrate:down",
+    "knex:migrate:list": "knex migrate:list"
   },
   "author": "Elliott de Launay",
   "license": "cc-by-sa-4.0",
@@ -18,7 +25,9 @@
     "discord.js": "^14.8.0",
     "dotenv": "^16.0.3",
     "gpt-3-encoder": "^1.1.4",
+    "knex": "^2.4.2",
     "openai": "^3.2.1",
+    "sqlite3": "^5.1.6",
     "winston": "^3.8.2"
   },
   "devDependencies": {
