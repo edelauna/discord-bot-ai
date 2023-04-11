@@ -1,13 +1,17 @@
+import type { Message } from 'discord.js';
 import { DISCORD_MAX_CHARS } from '../../config/app';
 import { chunkHandler, clearActiveChunks } from '../../handlers/chunk';
+import { runners } from '../../svcs/runner';
 import { send } from '../../util/send';
 
 jest.mock('../../util/send', () => ({
     send: jest.fn(),
     sendTyping: jest.fn(),
 }));
+jest.mock('../../svcs/runner');
 
 describe('chunkHandler', () => {
+    const referenceId = 'ref-123';
     const channelId = '123';
     const data = { content: 'Hello, world!' };
 
@@ -16,6 +20,8 @@ describe('chunkHandler', () => {
     beforeEach(() => {
         sendMock = send as jest.MockedFunction<typeof send>;
         sendMock.mockResolvedValue();
+        const mockRunners = runners as jest.MockedObject<typeof runners>;
+        mockRunners[referenceId] = { message: { channelId: channelId } as Message, status: 'running' };
         // Clear activeChunks before each test
         clearActiveChunks();
     });
@@ -25,16 +31,16 @@ describe('chunkHandler', () => {
     });
 
     it('should handle a single chunk', () => {
-        const payload = { channelId, data };
+        const payload = { referenceId, data };
         chunkHandler(payload);
-        chunkHandler({ channelId: channelId, last: true });
+        chunkHandler({ referenceId, last: true });
         expect(sendMock).toHaveBeenCalledWith(channelId, data.content);
     });
 
     it('should handle multiple chunks', () => {
-        const payload1 = { channelId, data: { role: 'assistant' } };
+        const payload1 = { referenceId, data: { role: 'assistant' } };
         const longString = 'a'.repeat(2 * DISCORD_MAX_CHARS);
-        const payload2 = { channelId, data: { content: longString } };
+        const payload2 = { referenceId, data: { content: longString } };
         chunkHandler(payload1);
         chunkHandler(payload2);
         expect(sendMock).toHaveBeenCalledWith(channelId, 'a'.repeat(493));
@@ -43,9 +49,9 @@ describe('chunkHandler', () => {
     it('should handle a mix of long and short chunks', () => {
         const shortString = 'Hello';
         const longString = 'a'.repeat(2 * DISCORD_MAX_CHARS);
-        const payload1 = { channelId, data: { content: shortString } };
-        const payload2 = { channelId, data: { content: longString } };
-        const payload3 = { channelId, last: true };
+        const payload1 = { referenceId, data: { content: shortString } };
+        const payload2 = { referenceId, data: { content: longString } };
+        const payload3 = { referenceId, last: true };
         chunkHandler(payload1);
         chunkHandler(payload2);
         chunkHandler(payload3);
