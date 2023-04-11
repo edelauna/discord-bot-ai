@@ -1,20 +1,21 @@
-import { Snowflake } from 'discord.js';
 import { recordMessage } from '../../util/openai/messages';
+import { ReferenceId, runners } from '../../svcs/runner';
 
 interface MessageHandler {
-    channelId: Snowflake;
+    referenceId: ReferenceId;
     chunk?: string;
     end?: boolean;
 }
 
-const activeMessages = new Map<Snowflake, string>();
+const activeMessages = new Map<ReferenceId, string>();
 
-const messageHandler = ({ channelId, chunk, end }: MessageHandler) => {
-    const content = (activeMessages.get(channelId) || '') + chunk;
-    activeMessages.set(channelId, content);
+const messageHandler = ({ referenceId, chunk, end }: MessageHandler) => {
+    const content = (activeMessages.get(referenceId) || '') + chunk;
+    activeMessages.set(referenceId, content);
     if (end) {
-        recordMessage({ content, role: 'assistant' });
-        activeMessages.delete(channelId);
+        const { channelId } = runners[referenceId].message;
+        recordMessage(channelId, { content, role: 'assistant' });
+        activeMessages.delete(referenceId);
     }
 };
 
