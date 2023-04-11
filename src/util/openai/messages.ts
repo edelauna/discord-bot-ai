@@ -66,7 +66,7 @@ const endMessage = (referenceId: ReferenceId) => {
     return `||Used ${tokens[channelId]} tokens. ReferenceId: ${referenceId}||`;
 };
 
-const resetMessages = async (channelId: Snowflake) => {
+const resetMessages = (channelId: Snowflake) => {
     messages[channelId] = [];
     messages[channelId].push({
         role: 'system',
@@ -83,7 +83,7 @@ const resetAllMessages = async () => {
 };
 
 (async () => {
-    resetAllMessages();
+    await resetAllMessages();
 })();
 
 export { messages, recordMessage, resetMessages, endMessage };
