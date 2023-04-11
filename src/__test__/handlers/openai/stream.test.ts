@@ -50,9 +50,9 @@ describe('streamHandler', () => {
 
         // Assert that the mockCallback function was called with the correct arguments.
         expect(mockCallback).toHaveBeenCalledTimes(3);
-        expect(mockCallback).toHaveBeenCalledWith({ channelId: 'channel1', data: 5 });
-        expect(mockCallback).toHaveBeenCalledWith({ channelId: 'channel1', data: 10 });
-        expect(mockCallback).toHaveBeenCalledWith({ channelId: 'channel1', last: true });
+        expect(mockCallback).toHaveBeenCalledWith({ referenceId, data: 5 });
+        expect(mockCallback).toHaveBeenCalledWith({ referenceId, data: 10 });
+        expect(mockCallback).toHaveBeenCalledWith({ referenceId, last: true });
 
         // Assert that the Promise resolves without errors.
         await expect(streamPromise).resolves.not.toThrow();
@@ -98,7 +98,7 @@ describe('streamHandler', () => {
 
         // Assert that the mockCallback function was called with the correct arguments.
         expect(mockCallback).toHaveBeenCalledTimes(1);
-        expect(mockCallback).toHaveBeenCalledWith({ channelId: 'channel1', last: true });
+        expect(mockCallback).toHaveBeenCalledWith({ referenceId, last: true });
 
         // Assert that the Promise resolves without errors.
         await expect(streamPromise).resolves.not.toThrow();
@@ -153,7 +153,7 @@ describe('streamHandler', () => {
 
         // Assert that the mockCallback function was called with the correct arguments.
         expect(mockCallback).toHaveBeenCalledTimes(1);
-        expect(mockCallback).toHaveBeenCalledWith({ channelId: 'channel1', last: true });
+        expect(mockCallback).toHaveBeenCalledWith({ referenceId, last: true });
 
         // Assert that the Promise resolves without errors.
         await expect(streamPromise).resolves.not.toThrow();

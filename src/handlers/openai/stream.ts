@@ -8,7 +8,6 @@ const streamHandler = (
     stream: IncomingMessage,
     referenceId: ReferenceId,
 ) => new Promise<void>((resolve, reject) => {
-    const { channelId } = runners[referenceId].message;
     stream.on('data', async (chunk: Buffer) => {
         const { status } = runners[referenceId];
         if (status == 'aborted') { return stream.destroy(new StreamInterruptedError('Stream aborted')); }
@@ -22,7 +21,7 @@ const streamHandler = (
                 const data = payload.replaceAll(/(\n)?^data:\s*/g, '');
                 try {
                     const delta = JSON.parse(data.trim());
-                    chunkHandler({ channelId, data: delta.choices[0].delta });
+                    chunkHandler({ referenceId, data: delta.choices[0].delta });
                 }
                 catch (error) {
                     const msg = `Error with JSON.parse and ${payload}.`;
@@ -33,11 +32,11 @@ const streamHandler = (
         }
     });
     stream.on('end', async () => {
-        await chunkHandler({ channelId, last: true });
+        await chunkHandler({ referenceId, last: true });
         resolve();
     });
     stream.on('error', async (error: Error) => {
-        await chunkHandler({ channelId, last: true });
+        await chunkHandler({ referenceId, last: true });
         if (error instanceof StreamInterruptedError) { resolve(); }
         else { reject(error); }
     });
