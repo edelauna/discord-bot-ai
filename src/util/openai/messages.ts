@@ -83,7 +83,11 @@ const resetAllMessages = async () => {
 };
 
 (async () => {
-    await resetAllMessages();
+    /**
+     * Requires a connection to the db - not available in
+     * all tests when running test environment.
+     */
+    if (process.env.NODE_ENV !== 'test') { await resetAllMessages(); }
 })();
 
 export { messages, recordMessage, resetMessages, endMessage };
