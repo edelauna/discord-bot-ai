@@ -24,8 +24,8 @@ describe('singleMessage', () => {
 
         expect(sendTypingMock).toHaveBeenCalledWith(mockRunners['ref-123'].message.channelId);
 
-        expect(recordMessageMock).toHaveBeenCalledWith({ content: mockContent, role: 'user' });
-        expect(recordMessageMock).toHaveBeenCalledWith({ content: mockContent, role: 'user' });
+        expect(recordMessageMock).toHaveBeenCalledWith('123', { content: mockContent, role: 'user' });
+        expect(recordMessageMock).toHaveBeenCalledWith('123', { content: mockContent, role: 'user' });
         expect(completionMessageMock).toHaveBeenCalledWith('ref-123');
     });
 });

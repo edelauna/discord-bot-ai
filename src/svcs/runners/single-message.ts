@@ -9,8 +9,9 @@ interface SingleMessage {
 }
 
 const singleMessage = async ({ content, referenceId }: SingleMessage) => {
-    sendTyping(runners[referenceId].message.channelId);
-    recordMessage({ content, role: 'user' });
+    const { channelId } = runners[referenceId].message;
+    sendTyping(channelId);
+    recordMessage(channelId, { content, role: 'user' });
     await completionMessage(referenceId);
 };
 

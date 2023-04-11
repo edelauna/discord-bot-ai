@@ -5,7 +5,6 @@ import { send } from '../../util/send';
 import { multiplexorService } from '../../svcs/runners/mux';
 import { generateUuid } from '../../util/uuid';
 
-
 // Mocks
 jest.mock('../../util/send');
 jest.mock('../../svcs/runners/mux');
@@ -59,14 +58,14 @@ describe('runner', () => {
 
             expect(runners['123']).toEqual({ status: 'running', message });
         });
-        it('deletes runners', async () => {
+        it('deletes runners', () => {
             const message = {} as Message;
             runners['123'] = { status: 'running', message };
             updateRunners('complete', message, '123');
 
             expect(runners['123']).toBeUndefined();
         });
-        it('deletes aborted runners', async () => {
+        it('deletes aborted runners', () => {
             const message = {} as Message;
             runners['123'] = { status: 'aborted', message };
             updateRunners('complete', message, '123');
