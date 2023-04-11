@@ -27,4 +27,10 @@ const getChannel = async (channelId: Snowflake) => {
     return;
 };
 
-export { insertChannel, removeChannel, getChannel, updateChannel, Channel };
+const getChannels = async () => {
+    const rows = await _db().select();
+    return rows;
+};
+
+
+export { insertChannel, removeChannel, getChannel, updateChannel, Channel, getChannels };
