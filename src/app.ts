@@ -10,8 +10,8 @@ const app = async () => {
         process.exit(1);
     });
 
-    process.on('unhandledRejection', (reason, promise) => {
-        logger.error(`Unhandled Rejection at: ${promise}, reason: ${reason}`, { promise });
+    process.on('unhandledRejection', (err, promise) => {
+        logger.error(`Unhandled Rejection at: ${promise}, reason: ${err}`, { stack: (err as Error).stack });
         process.exit(1);
     });
 

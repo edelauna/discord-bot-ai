@@ -6,7 +6,6 @@ WORKDIR /app
 COPY . .
 RUN npm install
 RUN npm run tsc
-RUN npm run knex:migrate:latest
 
 # supervisord
 ##############
