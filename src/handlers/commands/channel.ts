@@ -10,7 +10,7 @@ const execute = async (interaction: CommandInteraction) => {
     try {
         if (status == 'enable' || status == 'disable') {
             const active = status == 'enable' ? true : false;
-            if (channel) { await updateChannel(active, channel.channel_id); }
+            if (channel) { await updateChannel(channel.channel_id, { active }); }
             else { await insertChannel(interaction.channelId, active); }
             reply = `This channel has -bot-ai ${status}d`;
         }
@@ -21,7 +21,7 @@ const execute = async (interaction: CommandInteraction) => {
     }
     catch (err) {
         const referenceId = generateUuid();
-        logger.error((err as Error).message, { referenceId, stact: (err as Error).stack });
+        logger.error((err as Error).message, { referenceId, stack: (err as Error).stack });
         await interaction.reply(`There was a problem updating the status. ReferenceId: ${referenceId}`);
     }
 };
