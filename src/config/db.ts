@@ -1,5 +1,6 @@
 import path from 'path';
 import knex from 'knex';
+import { environment } from './app';
 
 
 const config = (db = 'development') => ({
@@ -10,6 +11,6 @@ const config = (db = 'development') => ({
     useNullAsDefault: true,
 });
 
-const db = knex(config(process.env.NODE_ENV));
+const db = knex(config(environment));
 
 export { db, config };

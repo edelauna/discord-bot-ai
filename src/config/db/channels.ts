@@ -5,7 +5,10 @@ interface Channel {
     id: number,
     channel_id: Snowflake,
     active: boolean,
+    prompt?: string | null,
 }
+
+type PartialChannel = Omit<Channel, 'id' | 'channel_id'>;
 
 const _db = () => db<Channel>('channels').clone();
 
@@ -13,8 +16,8 @@ const insertChannel = async (channelId: Snowflake, active: boolean) => {
     return await _db().insert({ channel_id: channelId, active });
 };
 
-const updateChannel = async (active: boolean, channelId: string) => {
-    return await _db().where({ channel_id: channelId }).update({ active });
+const updateChannel = async (channelId: string, payload: PartialChannel) => {
+    return await _db().where({ channel_id: channelId }).update(payload);
 };
 
 const removeChannel = async (channelId: Snowflake) => {
