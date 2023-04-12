@@ -4,5 +4,11 @@ class MessageTokenLengthExceeded extends Error {
         this.name = 'MessageTokenLengthExceeded';
     }
 }
+class UnableToSetSystemMessage extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'UnableToSetSystemMessage';
+    }
+}
 
-export { MessageTokenLengthExceeded };
+export { MessageTokenLengthExceeded, UnableToSetSystemMessage };

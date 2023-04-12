@@ -1,6 +1,6 @@
 import { encode } from 'gpt-3-encoder';
 import { MessageTokenLengthExceeded } from '../../errors/messages';
-import { DEFAULT_SYSTEM_MESSAGE } from '../../config/app';
+import { DEFAULT_SYSTEM_MESSAGE, environment } from '../../config/app';
 import { Snowflake } from 'discord.js';
 import { ReferenceId, runners } from '../../svcs/runner';
 import { getChannels } from '../../config/db/channels';
@@ -14,15 +14,13 @@ interface Message {
 const MAX_TOKENS = 4_096 / 4 * 3;
 
 const messages: Record<Snowflake, Message[]> = {};
-const systemMessage = DEFAULT_SYSTEM_MESSAGE;
-const systemTokens = encode(systemMessage).length;
+const systemMessages: Record<Snowflake, string> = {};
 const tokens: Record<Snowflake, number> = {};
 
 const recordMessage = (channelId: Snowflake, { content, role }: Message) => {
     const _messages = getMessages(channelId);
-    setTokens(channelId);
     const messageTokens = encode(content).length;
-    confirmAvailableTokensForMessage(messageTokens);
+    confirmAvailableTokensForMessage(messageTokens, systemMessages[channelId]);
     trimMessages(messageTokens, _messages, channelId);
 
     tokens[channelId] += messageTokens;
@@ -33,20 +31,15 @@ const recordMessage = (channelId: Snowflake, { content, role }: Message) => {
     });
 };
 
-const setTokens = (channelId: Snowflake) => {
-    const _tokens = tokens[channelId];
-    if (_tokens) return;
-    tokens[channelId] = systemTokens;
-};
-
 const getMessages = (channelId: Snowflake) => {
     const _messages = messages[channelId];
     if (_messages) { return _messages; }
-    messages[channelId] = [];
+    resetMessages(channelId);
     return messages[channelId];
 };
 
-const confirmAvailableTokensForMessage = (messageTokens: number) => {
+const confirmAvailableTokensForMessage = (messageTokens: number, systemMessage: string) => {
+    const systemTokens = encode(systemMessage).length;
     const allowedTokesn = MAX_TOKENS - systemTokens;
     if (messageTokens > allowedTokesn) {
         throw new MessageTokenLengthExceeded(
@@ -68,28 +61,40 @@ const endMessage = (referenceId: ReferenceId) => {
 
 const resetMessages = (channelId: Snowflake) => {
     messages[channelId] = [];
+    if (!systemMessages[channelId]) { systemMessages[channelId] = DEFAULT_SYSTEM_MESSAGE; }
+    const systemTokens = encode(systemMessages[channelId]).length;
     messages[channelId].push({
         role: 'system',
-        content: systemMessage,
+        content: systemMessages[channelId],
     });
     tokens[channelId] = systemTokens;
 };
 const resetAllMessages = async () => {
     const channels = await getChannels();
     channels.map(channel => {
-        const { channel_id } = channel;
+        const { channel_id, prompt } = channel;
+        if (prompt) { systemMessages[channel_id] = prompt; }
         resetMessages(channel_id);
     });
 };
 
+const setSystemMessage = (channelId: Snowflake, prompt: string | null) => {
+    if (!systemMessages[channelId] || !prompt) { return false; }
+    const oldTokens = encode(systemMessages[channelId]).length;
+    const newTokens = encode(prompt).length;
+    systemMessages[channelId] = prompt;
+    messages[channelId][0] = {
+        role: 'system',
+        content: prompt,
+    };
+    tokens[channelId] = newTokens - oldTokens;
+    return true;
+};
+
 (async () => {
-    /**
-     * Requires a connection to the db - not available in
-     * all tests when running test environment.
-     */
-    if (process.env.NODE_ENV !== 'test') { await resetAllMessages(); }
+    if (environment != 'test') { await resetAllMessages(); }
 })();
 
-export { messages, recordMessage, resetMessages, endMessage };
+export { messages, recordMessage, resetMessages, endMessage, setSystemMessage };
 export type { Message };
 
