@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node dist/src/app.js",
+    "start": "ts-node --transpile-only ./src/app.ts",
     "start:dev": "nodemon",
     "lint": "eslint src/",
     "tsc": "tsc",
