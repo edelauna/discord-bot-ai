@@ -15,8 +15,11 @@ const completionMessage = async (referenceId: ReferenceId) => {
         stream: true,
     }, { responseType: 'stream' });
     const responseTime = Date.now() - startTime;
-    // This all of a sudden became really long... ~10s
-    logger.info(`openai.createChatCompletion time until response.data stream:${((responseTime % 60000) / 1000).toFixed(1)}s, ${responseTime % 1000}ms`);
+    // Sometimes this gets really slow... typically mornings EST.
+    logger.info(
+        `openai.createChatCompletion time until response.data stream:${((responseTime % 60000) / 1000).toFixed(1)}s, ${responseTime % 1000}ms`,
+        { referenceId },
+    );
     if (runners[referenceId].status == 'aborted') { return; }
     const stream = response.data as unknown as IncomingMessage;
     await streamHandler(stream, referenceId);
