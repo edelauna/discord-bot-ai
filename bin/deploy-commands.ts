@@ -2,7 +2,6 @@ import { REST, Routes } from 'discord.js';
 import { clientId, guildId, token } from '../src/config/app';
 import fs from 'node:fs';
 import path from 'node:path';
-import { db } from '../src/config/db';
 
 const commands = [];
 // Grab all the command files from the commands directory you created earlier
@@ -34,5 +33,4 @@ const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('
         // And of course, make sure you catch and log any errors!
         console.error(error);
     }
-    finally { db.destroy(); }
 })();

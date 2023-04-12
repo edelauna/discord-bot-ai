@@ -1,6 +1,6 @@
 import { encode } from 'gpt-3-encoder';
 import { MessageTokenLengthExceeded } from '../../errors/messages';
-import { DEFAULT_SYSTEM_MESSAGE, environment } from '../../config/app';
+import { DEFAULT_SYSTEM_MESSAGE } from '../../config/app';
 import { Snowflake } from 'discord.js';
 import { ReferenceId, runners } from '../../svcs/runner';
 import { getChannels } from '../../config/db/channels';
@@ -91,10 +91,6 @@ const setSystemMessage = (channelId: Snowflake, prompt: string | null) => {
     return true;
 };
 
-(async () => {
-    if (environment != 'test') { await resetAllMessages(); }
-})();
-
-export { messages, recordMessage, resetMessages, endMessage, setSystemMessage };
+export { messages, recordMessage, resetMessages, endMessage, setSystemMessage, resetAllMessages };
 export type { Message };
 
