@@ -1,4 +1,4 @@
-import { recordMessage, messages, resetMessages, Message } from '../../../util/openai/messages';
+import { recordMessage, messages, resetMessages, Message, setSystemMessage } from '../../../util/openai/messages';
 import fixtureMessage from './fixtures/messages.json';
 import { MessageTokenLengthExceeded } from '../../../errors/messages';
 import fs from 'fs';
@@ -66,5 +66,29 @@ describe('recordMessage', () => {
 
         expect(messages[channelId]).toHaveLength(1);
         expect(messages[channelId][0].content).toBe('You are a helpful assistant that responds using markdown.');
+    });
+});
+
+describe('setSystemMessage', () => {
+    let channelId = '123';
+    beforeEach(() => {
+        resetMessages(channelId);
+    });
+    it('should not set a system message if prompt is null', () => {
+        const result = setSystemMessage(channelId, null);
+        expect(result).toBe(false);
+    });
+
+    it('should not set a system message if channelId does not exist', () => {
+        channelId = '99999';
+        const prompt = 'new message';
+        const result = setSystemMessage(channelId, prompt);
+        expect(result).toBe(false);
+    });
+
+    it('should set a system message and update messages and tokens', () => {
+        const prompt = 'new message';
+        const result = setSystemMessage(channelId, prompt);
+        expect(result).toBe(true);
     });
 });
