@@ -37,7 +37,7 @@ describe('channels', () => {
             await insertChannel(channelId, true);
 
             const newActive = false;
-            await updateChannel(newActive, channelId);
+            await updateChannel(channelId, { active: newActive });
 
             const channels = await db<Channel>('channels').select();
             expect(channels).toHaveLength(1);
