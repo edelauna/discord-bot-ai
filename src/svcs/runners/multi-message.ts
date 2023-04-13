@@ -5,7 +5,7 @@ import { getFileContent, isTextFile } from '../../handlers/files';
 import { ReferenceId, runners } from '../runner';
 
 const multiMessage = async (referenceId: ReferenceId) => {
-    const { message, status } = runners[referenceId];
+    const { message } = runners[referenceId];
     const { channelId, attachments } = message;
     await sendTyping(channelId);
     send(channelId,
@@ -14,6 +14,7 @@ const multiMessage = async (referenceId: ReferenceId) => {
         .then(() => sendTyping(channelId));
     const preText = message.content + '\n';
     for (const attachment of attachments.values()) {
+        const { status } = runners[referenceId];
         if (status == 'aborted') { break; }
         send(channelId, `Downloading ${attachment.name}...`).then(() => sendTyping(channelId));
         try {
