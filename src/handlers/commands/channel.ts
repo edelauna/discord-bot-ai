@@ -2,6 +2,7 @@ import type { CommandInteraction } from 'discord.js';
 import { getChannel, insertChannel, updateChannel } from '../../config/db/channels';
 import { generateUuid } from '../../util/uuid';
 import { logger } from '../../util/log';
+import { resetMessages } from '../../util/openai/messages';
 
 const execute = async (interaction: CommandInteraction) => {
     const status = interaction.options.get('status')?.value;
@@ -12,6 +13,7 @@ const execute = async (interaction: CommandInteraction) => {
             const active = status == 'enable' ? true : false;
             if (channel) { await updateChannel(channel.channel_id, { active }); }
             else { await insertChannel(interaction.channelId, active); }
+            resetMessages(interaction.channelId);
             reply = `This channel has -bot-ai ${status}d`;
         }
         else if (channel?.active) { reply = 'This channel has -bot-ai enabled'; }
