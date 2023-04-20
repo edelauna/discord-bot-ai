@@ -18,11 +18,9 @@ const downloadTextFile = async (attachmentId: Snowflake, url: string) => {
     while (isText) {
         const { value, done } = await reader.read();
         if (done) { break; }
-        const decoder = new TextDecoder('ascii');
+        const decoder = new TextDecoder('utf-8');
         const temp = decoder.decode(value.buffer);
-        // There could be control characters within a valid text file.
-        // eslint-disable-next-line no-control-regex
-        isText = /^[\x00-\x7F]*$/.test(temp);
+        isText = /^[\p{L}\p{M}\p{N}\p{P}\p{Z}\p{S}\r\n\t]*$/u.test(temp);
         files[attachmentId] = { isText };
         partial = isText ? partial + temp : partial;
     }
