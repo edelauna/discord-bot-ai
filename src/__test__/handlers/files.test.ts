@@ -12,7 +12,8 @@ describe('files', () => {
     describe('isTextFile', () => {
         it('should call fetch and return true for text files', async () => {
             const mockRead = jest.fn();
-            mockRead.mockResolvedValueOnce(Promise.resolve({ value: new Uint8Array(Buffer.from('text-file-content')), done: false }));
+            const fileContent = await fs.readFile(path.join(__dirname, './fixtures/text.txt'));
+            mockRead.mockResolvedValueOnce(Promise.resolve({ value: new Uint8Array(fileContent), done: false }));
             mockRead.mockResolvedValueOnce(Promise.resolve({ done: true }));
             global.fetch = jest.fn().mockImplementationOnce(() =>
                 Promise.resolve({

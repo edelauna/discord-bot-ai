@@ -19,7 +19,10 @@ const multiMessage = async (referenceId: ReferenceId) => {
         send(channelId, `Downloading ${attachment.name}...`).then(() => sendTyping(channelId));
         try {
             const processable = await isTextFile(attachment.id, attachment.url);
-            if (!processable) { continue; }
+            if (!processable) {
+                send(channelId, `Unable to read: ${attachment.name}`);
+                continue;
+            }
             const content = await getFileContent(attachment.id);
             await singleMessage({ content: preText + content, referenceId });
         }
