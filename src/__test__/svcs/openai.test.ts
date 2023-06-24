@@ -32,7 +32,7 @@ describe('completionMessage', () => {
         await completionMessage('ref-123');
 
         expect(mockCreateChatCompletion).toHaveBeenCalledWith({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-3.5-turbo-16k',
             messages: [{
                 'content': 'You are a helpful assistant that responds using markdown.',
                 'role': 'system',
@@ -62,7 +62,7 @@ describe('completionMessage', () => {
         await completionMessage('ref-123');
 
         expect(mockCreateChatCompletion).toHaveBeenCalledWith({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-3.5-turbo-16k',
             messages: [{
                 'content': 'You are a helpful assistant that responds using markdown.',
                 'role': 'system',
