@@ -11,25 +11,27 @@ const streamHandler = (
     stream.on('data', async (chunk: Buffer) => {
         const { status } = runners[referenceId];
         if (status == 'aborted') { return stream.destroy(new StreamInterruptedError('Stream aborted')); }
-        // Messages in the event stream are separated by a pair of newline characters.
-        const payloads = chunk.toString().split('\n\n');
-        for (const payload of payloads) {
-            // signalling to chunkHandler to finish via stream.on('end')
-            if (payload.includes('[DONE]')) return;
-            if (payload.startsWith('data:')) {
-                // in case there's multiline data event
-                const data = payload.replaceAll(/(\n)?^data:\s*/g, '');
-                try {
-                    const delta = JSON.parse(data.trim());
-                    chunkHandler({ referenceId, data: delta.choices[0].delta });
-                }
-                catch (error) {
-                    const msg = `Error with JSON.parse and ${payload}.`;
-                    logger.error(`${msg}\n${error}`, { referenceId });
-                    stream.emit('error', new StreamDataError(msg, error as Error));
-                }
+        const payload = chunk.toString();
+        if (payload.startsWith('data:')) {
+            // Messages in the event stream are separated by a pair of newline characters.
+            // Have been receiving json data over multiple chunks, regex to squash multiline and remove [DONE]
+            const data = payload.replaceAll(/((\n){2}|^)data:\s*(\[DONE\])?/g, '').trim();
+
+            // empty data - assuming received `data: [DONE]` - finishing stream
+            if (!data) return;
+            try {
+                const delta = JSON.parse(data);
+                chunkHandler({ referenceId, data: delta.choices[0].delta });
+            }
+            catch (error) {
+                const msg = `Error with JSON.parse and ${payload}.`;
+                logger.error(`${msg}\n${error}`, { referenceId });
+                stream.emit('error', new StreamDataError(msg, error as Error));
             }
         }
+        // signalling to chunkHandler to finish via stream.on('end')
+        // incase received `data: [DATA]` as part of multiline resposne
+        if (payload.includes('[DONE]')) return;
     });
     stream.on('end', async () => {
         await chunkHandler({ referenceId, last: true });
