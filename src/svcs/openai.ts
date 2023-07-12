@@ -10,7 +10,7 @@ const completionMessage = async (referenceId: ReferenceId) => {
     const { channelId } = runners[referenceId].message;
     const startTime = Date.now();
     const response = await openai.createChatCompletion({
-        model: 'gpt-4-32k',
+        model: 'gpt-3.5-turbo-16k',
         messages: messages[channelId],
         stream: true,
     }, { responseType: 'stream' });
