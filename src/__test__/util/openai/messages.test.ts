@@ -40,7 +40,7 @@ describe('recordMessage', () => {
             recordMessage(channelId, { content: message, role: (['user', 'assistant'][i++ % 2] as Message['role']) });
         }
 
-        expect(messages[channelId]).toHaveLength(31);
+        expect(messages[channelId]).toHaveLength(27);
         expect(messages[channelId]).not.toHaveLength(fixtureMessage.length);
         expect(messages[channelId][0].content).toBe('You are a helpful assistant that responds using markdown.');
         // short message was removed

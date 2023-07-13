@@ -11,7 +11,7 @@ interface Message {
 }
 
 // leaving 1/4 tokens for the reponse
-const MAX_TOKENS = 16_384 / 4 * 3;
+const MAX_TOKENS = 8_192 / 4 * 3;
 
 const messages: Record<Snowflake, Message[]> = {};
 const systemMessages: Record<Snowflake, string> = {};
