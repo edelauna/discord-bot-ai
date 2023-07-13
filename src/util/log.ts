@@ -9,7 +9,7 @@ const logger = winston.createLogger({
             filename: 'logs/error.log',
             level: 'error',
             maxsize: 5242880,
-            maxFiles: 3,
+            maxFiles: 1,
             tailable: true,
         }),
         new winston.transports.File({
