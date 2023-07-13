@@ -24,7 +24,7 @@ const streamHandler = (
                     chunkHandler({ referenceId, data: delta.choices[0].delta });
                 }
                 catch (error) {
-                    const msg = `Error with JSON.parse and ${payload}.`;
+                    const msg = `Error with JSON.parse and ${payloads}.`;
                     logger.error(`${msg}\n${error}`, { referenceId });
                     stream.emit('error', new StreamDataError(msg, error as Error));
                 }
