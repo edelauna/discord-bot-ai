@@ -1,7 +1,7 @@
 import { IncomingMessage } from 'http';
 import { chunkHandler } from '../chunk';
 import { logger } from '../../util/log';
-import { StreamDataError, StreamInterruptedError } from '../../errors/stream';
+import { StreamInterruptedError } from '../../errors/stream';
 import { ReferenceId, runners } from '../../svcs/runner';
 
 const streamHandler = (
@@ -26,7 +26,12 @@ const streamHandler = (
                 catch (error) {
                     const msg = `Error with JSON.parse and ${payloads}.`;
                     logger.error(`${msg}\n${error}`, { referenceId });
-                    stream.emit('error', new StreamDataError(msg, error as Error));
+                    /**
+                     * Swallow the errors for now, receiving partial JSON
+                     * is happening more and more frequently
+                     * TODO: revamp and actually stream data into json.
+                     */
+                    // stream.emit('error', new StreamDataError(msg, error as Error));
                 }
             }
         }
