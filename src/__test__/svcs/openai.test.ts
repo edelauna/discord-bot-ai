@@ -1,10 +1,11 @@
-import { AxiosResponse } from 'axios';
 import { openai } from '../../config/openai';
 import { completionMessage } from '../../svcs/openai';
 import { streamHandler } from '../../handlers/openai/stream';
 import { runners } from '../../svcs/runner';
 import type { Message } from 'discord.js';
 import { messages } from '../../util/openai/messages';
+import { Stream } from 'openai/streaming';
+import { ChatCompletionChunk } from 'openai/resources/chat';
 
 jest.mock('../../handlers/openai/stream');
 jest.mock('../../util/openai/messages');
@@ -15,11 +16,9 @@ describe('completionMessage', () => {
 
     test('calls the provided callback with chat completions', async () => {
         const mockStream = jest.fn();
-        const mockResponse = {
-            data: mockStream,
-        };
-        const mockCreateChatCompletion = jest.spyOn(openai, 'createChatCompletion').mockResolvedValue(
-            mockResponse as unknown as AxiosResponse,
+
+        const mockCreateChatCompletion = jest.spyOn(openai.chat.completions, 'create').mockResolvedValue(
+            mockStream as unknown as Stream<ChatCompletionChunk>,
         );
         const mockStreamHandler = streamHandler as jest.MockedFunction<typeof streamHandler>;
         const mockRunners = runners as jest.MockedObject<typeof runners>;
@@ -38,8 +37,6 @@ describe('completionMessage', () => {
                 'role': 'system',
             }],
             stream: true,
-        }, {
-            responseType: 'stream',
         });
         expect(mockStreamHandler).toHaveBeenCalledWith(mockStream, 'ref-123');
     });
@@ -48,8 +45,8 @@ describe('completionMessage', () => {
         const mockResponse = {
             data: mockStream,
         };
-        const mockCreateChatCompletion = jest.spyOn(openai, 'createChatCompletion').mockResolvedValue(
-            mockResponse as unknown as AxiosResponse,
+        const mockCreateChatCompletion = jest.spyOn(openai.chat.completions, 'create').mockResolvedValue(
+            mockResponse as unknown as Stream<ChatCompletionChunk>,
         );
         const mockStreamHandler = streamHandler as jest.MockedFunction<typeof streamHandler>;
         const mockRunners = runners as jest.MockedObject<typeof runners>;
@@ -68,8 +65,6 @@ describe('completionMessage', () => {
                 'role': 'system',
             }],
             stream: true,
-        }, {
-            responseType: 'stream',
         });
         expect(mockStreamHandler).toHaveBeenCalledTimes(0);
     });

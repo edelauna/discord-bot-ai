@@ -1,9 +1,8 @@
-import { OpenAIApi, Configuration } from 'openai';
+import OpenAI from 'openai';
 import { openaiApiKey } from '../config/app';
 
-const configuration = new Configuration({
+const openai = new OpenAI({
     apiKey: openaiApiKey,
 });
-const openai = new OpenAIApi(configuration);
 
 export { openai };

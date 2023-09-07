@@ -3,6 +3,7 @@ import { DISCORD_MAX_CHARS } from '../../config/app';
 import { chunkHandler, clearActiveChunks } from '../../handlers/chunk';
 import { runners } from '../../svcs/runner';
 import { send } from '../../util/send';
+import { ChatCompletionChunk } from 'openai/resources/chat';
 
 jest.mock('../../util/send', () => ({
     send: jest.fn(),
@@ -38,7 +39,7 @@ describe('chunkHandler', () => {
     });
 
     it('should handle multiple chunks', () => {
-        const payload1 = { referenceId, data: { role: 'assistant' } };
+        const payload1 = { referenceId, data: { role: 'assistant' } as ChatCompletionChunk.Choice.Delta };
         const longString = 'a'.repeat(2 * DISCORD_MAX_CHARS);
         const payload2 = { referenceId, data: { content: longString } };
         chunkHandler(payload1);
