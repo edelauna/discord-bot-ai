@@ -6,6 +6,16 @@ on:
   pull_request:
 
 jobs:
+  review:
+    name: Chat GPT Code Peer Review
+    runs-on: ubuntu-latest
+    environment: Main
+    steps:
+      - uses: actions/checkout@v3
+      - uses: edelauna/gpt-review@v1
+        with:
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+
   build:
     name: Build & Test
     runs-on: ubuntu-latest # Use the latest version of Ubuntu
