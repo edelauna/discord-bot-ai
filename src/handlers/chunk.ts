@@ -4,15 +4,13 @@ import { send, sendTyping } from '../util/send';
 import { messageHandler } from './openai/message';
 import { endMessage } from '../util/openai/messages';
 import { ReferenceId, runners } from '../svcs/runner';
+import { ChatCompletionChunk } from 'openai/resources/chat';
 
 interface ChunkHandler {
     // want to limit interactions to one channel at a time
     referenceId: ReferenceId,
     last?: boolean,
-    data?: {
-        role?: string
-        content?: string
-    }
+    data?: ChatCompletionChunk.Choice.Delta
 }
 
 const activeChunks = new Map<ReferenceId, string>();
