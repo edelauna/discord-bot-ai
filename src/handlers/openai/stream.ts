@@ -1,50 +1,24 @@
-import { IncomingMessage } from 'http';
 import { chunkHandler } from '../chunk';
-import { logger } from '../../util/log';
-import { StreamInterruptedError } from '../../errors/stream';
 import { ReferenceId, runners } from '../../svcs/runner';
+import type { Stream } from 'openai/streaming';
+import type { ChatCompletionChunk } from 'openai/resources/chat';
 
-const streamHandler = (
-    stream: IncomingMessage,
+const streamHandler = async (
+    stream: Stream<ChatCompletionChunk>,
     referenceId: ReferenceId,
-) => new Promise<void>((resolve, reject) => {
-    stream.on('data', async (chunk: Buffer) => {
+) => {
+    let aborted = false;
+    for await (const part of stream) {
         const { status } = runners[referenceId];
-        if (status == 'aborted') { return stream.destroy(new StreamInterruptedError('Stream aborted')); }
-        // Messages in the event stream are separated by a pair of newline characters.
-        const payloads = chunk.toString().split('\n\n');
-        for (const payload of payloads) {
-            // signalling to chunkHandler to finish via stream.on('end')
-            if (payload.includes('[DONE]')) return;
-            if (payload.startsWith('data:')) {
-                // in case there's multiline data event
-                const data = payload.replaceAll(/(\n)?^data:\s*/g, '');
-                try {
-                    const delta = JSON.parse(data.trim());
-                    chunkHandler({ referenceId, data: delta.choices[0].delta });
-                }
-                catch (error) {
-                    const msg = `Error with JSON.parse and ${payloads}.`;
-                    logger.error(`${msg}\n${error}`, { referenceId });
-                    /**
-                     * Swallow the errors for now, receiving partial JSON
-                     * is happening more and more frequently
-                     * TODO: revamp and actually stream data into json.
-                     */
-                    // stream.emit('error', new StreamDataError(msg, error as Error));
-                }
-            }
+        if (status == 'aborted') {
+            await chunkHandler({ referenceId, last: true });
+            stream.controller.abort();
+            aborted = true;
+            break;
         }
-    });
-    stream.on('end', async () => {
-        await chunkHandler({ referenceId, last: true });
-        resolve();
-    });
-    stream.on('error', async (error: Error) => {
-        await chunkHandler({ referenceId, last: true });
-        if (error instanceof StreamInterruptedError) { resolve(); }
-        else { reject(error); }
-    });
-});
+        await chunkHandler({ referenceId, data: part.choices[0].delta });
+    }
+    if (!aborted) await chunkHandler({ referenceId, last: true });
+};
 
 export { streamHandler };
