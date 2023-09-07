@@ -8,7 +8,7 @@ export const clientId = process.env.CLIENT_ID;
 
 export const guildId = process.env.GUILD_ID;
 
-export const openaiApiKey = process.env.OPENAI_API_KEY;
+export const openaiApiKey = process.env.OPENAI_API_KEY || 'sk-placeholder';
 
 export const environment = process.env.NODE_ENV || 'development';
 
