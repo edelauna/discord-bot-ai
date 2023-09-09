@@ -15,6 +15,7 @@ jobs:
       - uses: edelauna/gpt-review@v1
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          ignore_files: package-lock.json
 
   build:
     name: Build & Test
