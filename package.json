@@ -23,7 +23,7 @@
   "license": "cc-by-sa-4.0",
   "dependencies": {
     "discord.js": "^14.14.1",
-    "dotenv": "^16.4.4",
+    "dotenv": "^16.4.5",
     "gpt-3-encoder": "^1.1.4",
     "knex": "^3.1.0",
     "openai": "^4.28.0",
