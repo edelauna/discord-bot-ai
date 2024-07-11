@@ -28,7 +28,7 @@
     "knex": "^3.1.0",
     "openai": "^4.47.1",
     "sqlite3": "^5.1.7",
-    "winston": "^3.13.0"
+    "winston": "^3.13.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
