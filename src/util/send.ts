@@ -2,16 +2,16 @@ import type {
     MessageCreateOptions,
     MessagePayload,
     Snowflake,
-    TextBasedChannel,
+    TextChannel,
 } from 'discord.js';
 import { SendError, SendTypingError } from '../errors/send';
 
-interface RegisterChannelSend {
+export interface RegisterChannelSend {
     channelId: Snowflake;
-    channel: TextBasedChannel;
+    channel: TextChannel;
 }
 
-const channelMap = new Map<Snowflake, TextBasedChannel>();
+const channelMap = new Map<Snowflake, TextChannel>();
 
 const setSend = ({ channelId, channel }: RegisterChannelSend) => channelMap.set(channelId, channel);
 
