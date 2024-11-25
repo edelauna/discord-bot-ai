@@ -1,5 +1,5 @@
 import type { Message, Snowflake } from 'discord.js';
-import { send, setSend } from '../util/send';
+import { RegisterChannelSend, send, setSend } from '../util/send';
 import { logger } from '../util/log';
 import { multiplexorService } from './runners/mux';
 import { generateUuid } from '../util/uuid';
@@ -20,7 +20,7 @@ const interactWithOpenAi = async (message: Message) => {
     const referenceId = generateUuid();
     try {
         updateRunners('start', message, referenceId);
-        setSend({ channelId, channel });
+        setSend({ channelId, channel } as RegisterChannelSend);
         await multiplexorService(referenceId);
     }
     catch (error) {

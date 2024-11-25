@@ -1,4 +1,4 @@
-import { TextBasedChannel } from 'discord.js';
+import { TextChannel } from 'discord.js';
 import { channelMap, send, sendTyping, setSend, unsetSend } from '../../util/send';
 import { SendError, SendTypingError } from '../../errors/send';
 
@@ -11,7 +11,7 @@ describe('channel functions', () => {
         const channelId = '123';
 
         // Add the fake channel to the channelMap using setSend
-        setSend({ channelId, channel: fakeChannel as unknown as TextBasedChannel });
+        setSend({ channelId, channel: fakeChannel as unknown as TextChannel });
 
         // Verify that the channel is in the channelMap
         expect(channelMap.get(channelId)).toBe(fakeChannel);
@@ -29,7 +29,7 @@ describe('channel functions', () => {
         const message = 'Hello, world!';
 
         // Add the fake channel to the channelMap using setSend
-        setSend({ channelId, channel: fakeChannel as unknown as TextBasedChannel });
+        setSend({ channelId, channel: fakeChannel as unknown as TextChannel });
 
         // Call send with the channelId and message
         await send(channelId, message);
@@ -49,7 +49,7 @@ describe('channel functions', () => {
         const channelId = '789';
 
         // Add the fake channel to the channelMap using setSend
-        setSend({ channelId, channel: fakeChannel as unknown as TextBasedChannel });
+        setSend({ channelId, channel: fakeChannel as unknown as TextChannel });
 
         // Call sendTyping with the channelId
         await sendTyping(channelId);
