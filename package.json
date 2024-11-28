@@ -12,7 +12,7 @@
     "deploy-commands": "ts-node bin/deploy-commands.ts",
     "test": "jest --coverage",
     "knex:init": "knex init -x ts",
-    "knex:migrate:make" : "knex migrate:make update_me -x ts",
+    "knex:migrate:make": "knex migrate:make update_me -x ts",
     "knex:migrate:latest": "knex migrate:latest",
     "knex:migrate:rollback": "knex migrate:rollback",
     "knex:migrate:up": "knex migrate:up",
@@ -31,10 +31,13 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.15.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.9.1",
     "@typescript-eslint/eslint-plugin": "^8.16.0",
     "eslint": "^9.15.0",
+    "globals": "^15.12.0",
     "jest": "^29.7.0",
     "nodemon": "^3.1.7",
     "ts-jest": "^29.2.5",
