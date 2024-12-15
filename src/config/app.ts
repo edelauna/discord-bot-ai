@@ -10,6 +10,8 @@ export const guildId = process.env.GUILD_ID;
 
 export const openaiApiKey = process.env.OPENAI_API_KEY || 'sk-placeholder';
 
+export const xaiApiKey = process.env.XAI_API_KEY || 'xai-placeholder';
+
 export const environment = process.env.NODE_ENV || 'development';
 
 // giving 6 char buffer to close out special formatting, and -1 for index.
