@@ -5,4 +5,10 @@ const openai = new OpenAI({
     apiKey: openaiApiKey,
 });
 
-export { openai };
+
+enum Models {
+    OPEN_AI = 'openai',
+    GROK = 'grok'
+}
+
+export { openai, Models };

@@ -11,6 +11,7 @@ interface Message {
 }
 
 // leaving 1/4 tokens for the reponse
+// OpenAI: 128_000 Grok: 131_072 - leaving as 128 for compatability
 const MAX_TOKENS = 128_000 / 4 * 3;
 
 const messages: Record<Snowflake, Message[]> = {};

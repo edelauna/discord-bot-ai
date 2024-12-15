@@ -8,7 +8,6 @@ import { generateUuid } from '../../util/uuid';
 // Mocks
 jest.mock('../../util/send');
 jest.mock('../../svcs/runners/mux');
-jest.mock('../../util/log');
 jest.mock('../../util/uuid');
 
 describe('runner', () => {
@@ -35,16 +34,16 @@ describe('runner', () => {
         });
 
         it('logs and sends an error message when multiplexorService throws an error', async () => {
+            const spy = jest.spyOn(logger, 'error');
             const message = { channelId: '123', channel: jest.fn(), content: 'hi' } as unknown as Message;
             const error = new Error('Oops!');
             mockMultiplexorService.mockRejectedValue(error);
             const sendMock = send as jest.MockedFunction<typeof send>;
             sendMock.mockImplementation = jest.fn();
             mockGenerateUuid.mockReturnValue('mock-uuid');
-
             await interactWithOpenAi(message);
 
-            expect(logger.error).toHaveBeenCalledWith('Oops!', expect.any(Object));
+            expect(spy).toHaveBeenCalledWith('Oops!', expect.any(Object));
             expect(sendMock).toHaveBeenCalledWith('123', '||Error:Oops! processing referenceId: mock-uuid||');
         });
     });

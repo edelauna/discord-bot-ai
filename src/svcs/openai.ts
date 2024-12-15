@@ -1,15 +1,30 @@
-import { openai } from '../config/openai';
+import { Models, openai } from '../config/openai';
 import { messages } from '../util/openai/messages';
 import { streamHandler } from '../handlers/openai/stream';
 import { ReferenceId, runners } from './runner';
 import { logger } from '../util/log';
+import { getChannel } from '../config/db/channels';
+import { openaiApiKey, xaiApiKey } from '../config/app';
 
 
 const completionMessage = async (referenceId: ReferenceId) => {
     const { channelId } = runners[referenceId].message;
+    const channel = await getChannel(channelId);
+    let model;
+    switch (channel?.model) {
+    case Models.GROK:
+        openai.apiKey = xaiApiKey;
+        openai.baseURL = 'https://api.x.ai/v1';
+        model = 'grok-2-1212';
+        break;
+    default:
+        openai.apiKey = openaiApiKey;
+        openai.baseURL = 'https://api.openai.com/v1';
+        model = 'gpt-4o-mini';
+    }
     const startTime = Date.now();
     const stream = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model,
         messages: messages[channelId],
         stream: true,
     });

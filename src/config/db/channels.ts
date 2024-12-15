@@ -6,6 +6,7 @@ interface Channel {
     channel_id: Snowflake,
     active: boolean,
     prompt?: string | null,
+    model?: string | null
 }
 
 type PartialChannel = Omit<Channel, 'id' | 'channel_id'>;
@@ -36,4 +37,6 @@ const getChannels = async () => {
 };
 
 
-export { insertChannel, removeChannel, getChannel, updateChannel, Channel, getChannels };
+export { insertChannel, removeChannel, getChannel, updateChannel, getChannels };
+export type { Channel };
+
